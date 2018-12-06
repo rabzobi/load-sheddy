@@ -15,17 +15,19 @@
 
 	$msg = "";
 
-	
+	// Get load shedding stage
 	if (empty($_GET['Stage'] )) 
 		$Stage = 1;
 	else 
 		$Stage = $_GET['Stage'];
 	
+	// get the Suburb (zone) maps onto Group
 	if (empty($_GET['ZoneID'] )) 
 		$ZoneID = 1;
 	else 
 		$ZoneID = $_GET['ZoneID'];
 
+	// Get current Group
 	$GroupID = 0;
 	$sql = "SELECT GroupID FROM zones where ZoneID = ".$ZoneID; 
 	$result = $conn->query($sql);
@@ -36,24 +38,22 @@
 
 ?>
 <html lang = "en">   
-   <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-      <title>Load Sheddy Web</title>
-      <link href = "css/bootstrap.min.css" rel = "stylesheet">      
-      <style>
-		body {
-			padding-top: 40px;
-			padding-bottom: 40px;
-		//background-color: #ADABAB;
-		}
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Load Sheddy Web</title>
+  <link href = "css/bootstrap.min.css" rel = "stylesheet">      
+  <style>
+	body {
+		padding-top: 40px;
+		padding-bottom: 40px;
+	//background-color: #ADABAB;
+	}
 
-		div {
-			width:auto;
-		}
-
-      </style>
-      
-   </head>
+	div {
+		width:auto;
+	}
+  </style>
+</head>
 <body>
    <div class="container">
 
@@ -83,7 +83,7 @@
 			$sql = "SELECT ZoneID, GroupID, substring(ZoneName,1,100) ZoneName FROM zones order by ZoneName"; // XXX calculate substring length based on screen width
 			$result = $conn->query($sql);
 			//echo 'Zones='.$result->num_rows.'<br>';
-?>			
+			?>			
 		<div class="form-group">
 		  <label for="ZoneID">Suburb:</label>
 		  <select class="form-control" id="ZoneID" name="ZoneID" onchange="this.form.submit()">
@@ -105,9 +105,8 @@
 		  <label>Schedule:</label>
 		  <table class="table table-hover" id="scheduleTable" border=1>
 		  <tr><td>Day</td><td>Start</td><td>End</td><td>Stage</td></tr>
-		  <?php //schedule (StartTime varchar(200),	EndTime varchar(200), Stage int,	Day int,	Zone int)
+		  <?php 
 			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." order by day asc"; 
-			//echo "<p>".$sql."</p>";
 			$result = $conn->query($sql);
 			if ($result->num_rows > 0) {
 				while($row = $result->fetch_assoc()) {
