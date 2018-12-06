@@ -1,0 +1,21 @@
+
+Here are some rough instructions for Windoze setup
+
+1. Install WAMP http://s1.softaculous.com/a/ampps/files/Ampps-3.8-setup.exe
+2. Create MySQL db
+3. Create a mysql user for yourself
+4. git clone git@github.com:rabzobi/load-sheddy.git
+5. ensure apache DocumentRoot points at the www directory you have checked out
+6. create db.php (details from step 2 and 3)
+
+<?php
+	$servername = "127.0.0.1";
+	$username = "user";
+	$password = "password";
+	$dbname = "load-sheddy";
+	$conn = new mysqli($servername, $username, $password, $dbname);
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	} 
+
+7. If you want to run multiple sites you need to setup VirtualHost's apache config and add ServerName to C:\Windows\System32\Drivers\etc\hosts
