@@ -36,6 +36,13 @@
 		$GroupID = $row["GroupID"];
 	}
 
+	// Get the schedule period 
+	if (empty($_GET['Period'] )) 
+		$Period = 1;
+	else 
+		$Period = $_GET['Period'];
+	
+
 ?>
 <html lang = "en">   
 <head>
@@ -62,17 +69,26 @@
   gtag('config', 'UA-129161061-3');
 </script>
 
+
 </head>
 <body>
    <div class="container">
-
+		<div style="float:left;">
+			<img src="/images/load-shed.jpg" height="125" title="Load Sheddy" alt="Load Sheddy" />
+		<br></br>
+		</div>
+		<div style="float:left;">
+			<h1>Load Sheddy</h1>
+		</div>
+		<br></br>
+		<br></br>
+		
       <!-- Main component -->
       <div class="">
          <form class = "form-main" role = "form" method = "get">
 
-			
 		<div class="form-group">
-		  <label for="Stage">Stage:</label>
+		  <label for="Stage">Stage</label>
 <?php
 
 $ch = curl_init(); 
@@ -92,8 +108,6 @@ echo "Status: ".$status."<br>";
 ?>	
 		  <select class="form-control" id="Stage" name="Stage" onchange="this.form.submit()">
 		  <?php 
-
-
 				$arr = array(1, 2, 3, 4, 5, 6, 7);
 				foreach ($arr as &$value) {
 					echo '<option value='.$value;
@@ -105,15 +119,14 @@ echo "Status: ".$status."<br>";
 			?>		  
 		  </select>
 		</div>
-
-
+		
 		  <?php
 			$sql = "SELECT ZoneID, GroupID, substring(ZoneName,1,100) ZoneName FROM zones order by ZoneName"; // XXX calculate substring length based on screen width
 			$result = $conn->query($sql);
 			//echo 'Zones='.$result->num_rows.'<br>';
 			?>			
 		<div class="form-group">
-		  <label for="ZoneID">Suburb:</label>
+		  <label for="ZoneID">Suburb</label>
 		  <select class="form-control" id="ZoneID" name="ZoneID" onchange="this.form.submit()">
 			<?php 
 				if ($result->num_rows > 0) {
@@ -122,26 +135,74 @@ echo "Status: ".$status."<br>";
 					if ($row["ZoneID"] == $ZoneID) {
 						echo ' SELECTED';
 					}
-					echo'>'.$row["ZoneName"].' = '.$row["GroupID"].'</option>';
-				}
+					echo'>'.$row["ZoneName"].'</option>';
+					
+					}
 			}
 			?>
+		  </select>
+		  </div>
+		  
+		  <div><label for="GroupID">
+		  <?php
+			echo 'Group: '.$GroupID
+			?>
+		  </div>
+		  
+		  
+		<div class="form-group">
+		  <label for="Period">Schedule period</label>  
+		  <select class="form-control" id="Period" name="Period" onchange="this.form.submit()">
+		  <?php 
+				$arr = array('Today', 'Next five days', 'Upcoming week', 'Upcoming fortnight', 'Upcoming month');
+				foreach ($arr as &$value) {
+					echo '<option value='.$value;
+					if ($value == $Period) {
+						echo ' SELECTED';
+					}
+					echo'> ' .$value.'</option>';
+				}
+			?>		  
 		  </select>
 		</div>
 
 		<div>
 		  <label>Schedule:</label>
 		  <table class="table table-hover" id="scheduleTable" border=1>
-		  <tr><td>Day</td><td>Start</td><td>End</td><td>Stage</td></tr>
+		  <tr style="font-weight:bold" ><td>Day</td><td>Start</td><td>End</td><td>Stage</td></tr>
 		  <?php 
 		  	$currrentDay = (int) date("d");
-			$lastDayThisMonth = date("t");
+			switch ($Period) {
+				case 'Today':
+					$lastDayThisMonth = (int) date("d");
+					break;
+				case 'Next five days':
+					$lastDayThisMonth = (int) date("d");
+					$lastDayThisMonth = $lastDayThisMonth +5;
+					break;
+				case 'Upcoming week':
+					$lastDayThisMonth = (int) date("d");
+					$lastDayThisMonth = $lastDayThisMonth +7;
+					break;
+				case 'Upcoming fortnight':
+					$lastDayThisMonth = (int) date("d");
+					$lastDayThisMonth = $lastDayThisMonth +14;
+					break;
+				case 'Upcoming month':
+					$lastDayThisMonth = (int) date("t");
+					break;
+				default:
+					$lastDayThisMonth = (int) date("t");
+					}
+			//$lastDayThisMonth = min(date("t"),$lastDayThisMonth);
+			//$lastDayThisMonth = date("t");
 		  	echo 'currrentDay='.$currrentDay.' lastDayThisMonth='.$lastDayThisMonth.'<br>';		  
 			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day >=".$currrentDay." and day  <= ".$lastDayThisMonth." order by day asc"; 
 			$result = $conn->query($sql);
+			$colors = ['white', 'whitesmoke'];
 			if ($result->num_rows > 0) {
 				while($row = $result->fetch_assoc()) {
-					echo "<tr>";
+					echo "<tr style='background-color: ".$colors[$row["Day"]%2].";'>";
 					echo "<td>".$row["Day"]."</td>";
 					echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
 					echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
@@ -150,20 +211,21 @@ echo "Status: ".$status."<br>";
 
 				}
 			}
+			if ($lastDayThisMonth >= date("t")) {
+				$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day < ".$currrentDay."  order by day asc"; 
+				$result = $conn->query($sql);
+				if ($result->num_rows > 0) {
+					while($row = $result->fetch_assoc()) {
+						echo "<tr>";
+						echo "<td>".$row["Day"]."</td>";
+						echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
+						echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
+						echo "<td>".$row["Stage"]."</td>";
+						echo "</td></tr>";
 
-			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day < ".$currrentDay."  order by day asc"; 
-			$result = $conn->query($sql);
-			if ($result->num_rows > 0) {
-				while($row = $result->fetch_assoc()) {
-					echo "<tr>";
-					echo "<td>".$row["Day"]."</td>";
-					echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
-					echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
-					echo "<td>".$row["Stage"]."</td>";
-					echo "</td></tr>";
-
+					}
 				}
-			}			
+			}				
 			?>
 			</table>
 		</div>		

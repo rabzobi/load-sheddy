@@ -19,5 +19,5 @@ Here are some rough instructions for Windoze setup
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
 	} 
-
+?>
 8. If you want to run multiple sites you need to setup VirtualHost's apache config and add ServerName to C:\Windows\System32\Drivers\etc\hosts
