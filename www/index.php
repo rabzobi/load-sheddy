@@ -59,7 +59,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'UA-129161061-3');
 </script>
 
@@ -74,8 +73,27 @@
 			
 		<div class="form-group">
 		  <label for="Stage">Stage:</label>
+<?php
+
+$ch = curl_init(); 
+curl_setopt($ch, CURLOPT_URL, "www.loadshedding.eskom.co.za"); 
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+$output = curl_exec($ch); 
+curl_close($ch);
+
+
+$firstSplit = explode('lsstatus',$output);
+$secondSplit = explode('span',$firstSplit[1]);
+//secondSplit=" style="font-size:18px; font-weight:bold"> not Load Shedding</
+$status1 = explode(">",$secondSplit[0]);
+$status2 = explode("<",$status1[1]);
+$status = ucwords(trim($status2[0]));
+echo "Status: ".$status."<br>";	
+?>	
 		  <select class="form-control" id="Stage" name="Stage" onchange="this.form.submit()">
 		  <?php 
+
+
 				$arr = array(1, 2, 3, 4, 5, 6, 7);
 				foreach ($arr as &$value) {
 					echo '<option value='.$value;
@@ -89,7 +107,7 @@
 		</div>
 
 
-		  <?php 
+		  <?php
 			$sql = "SELECT ZoneID, GroupID, substring(ZoneName,1,100) ZoneName FROM zones order by ZoneName"; // XXX calculate substring length based on screen width
 			$result = $conn->query($sql);
 			//echo 'Zones='.$result->num_rows.'<br>';
@@ -116,7 +134,10 @@
 		  <table class="table table-hover" id="scheduleTable" border=1>
 		  <tr><td>Day</td><td>Start</td><td>End</td><td>Stage</td></tr>
 		  <?php 
-			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." order by day asc"; 
+		  	$currrentDay = (int) date("d");
+			$lastDayThisMonth = date("t");
+		  	echo 'currrentDay='.$currrentDay.' lastDayThisMonth='.$lastDayThisMonth.'<br>';		  
+			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day >=".$currrentDay." and day  <= ".$lastDayThisMonth." order by day asc"; 
 			$result = $conn->query($sql);
 			if ($result->num_rows > 0) {
 				while($row = $result->fetch_assoc()) {
@@ -129,6 +150,20 @@
 
 				}
 			}
+
+			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day < ".$currrentDay."  order by day asc"; 
+			$result = $conn->query($sql);
+			if ($result->num_rows > 0) {
+				while($row = $result->fetch_assoc()) {
+					echo "<tr>";
+					echo "<td>".$row["Day"]."</td>";
+					echo "<td>".$row["StartTime"]."</td>";
+					echo "<td>".$row["EndTime"]."</td>";
+					echo "<td>".$row["Stage"]."</td>";
+					echo "</td></tr>";
+
+				}
+			}			
 			?>
 			</table>
 		</div>		
