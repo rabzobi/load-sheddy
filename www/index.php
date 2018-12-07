@@ -143,8 +143,8 @@ echo "Status: ".$status."<br>";
 				while($row = $result->fetch_assoc()) {
 					echo "<tr>";
 					echo "<td>".$row["Day"]."</td>";
-					echo "<td>".$row["StartTime"]."</td>";
-					echo "<td>".$row["EndTime"]."</td>";
+					echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
+					echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
 					echo "<td>".$row["Stage"]."</td>";
 					echo "</td></tr>";
 
@@ -157,8 +157,8 @@ echo "Status: ".$status."<br>";
 				while($row = $result->fetch_assoc()) {
 					echo "<tr>";
 					echo "<td>".$row["Day"]."</td>";
-					echo "<td>".$row["StartTime"]."</td>";
-					echo "<td>".$row["EndTime"]."</td>";
+					echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
+					echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
 					echo "<td>".$row["Stage"]."</td>";
 					echo "</td></tr>";
 
