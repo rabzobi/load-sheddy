@@ -75,12 +75,14 @@
    <div class="container">
 		<div style="float:left;">
 			<img src="/images/load-shed.jpg" height="125" title="Load Sheddy" alt="Load Sheddy" />
-		<br />
+		
 		</div>
 		<div style="float:left;">
 			<h1>Load Sheddy</h1>
 		</div>
+		<br>
 		<br />
+		<br>
 		<br />
 		
       <!-- Main component -->
@@ -154,8 +156,8 @@ echo "Status: ".$status."<br />";
 		  <label for="Period">Period</label>  
 		  <select class="form-control" id="Period" name="Period" onchange="this.form.submit()">
 		  <?php 
-				$arr = array("Today", "Next five days", "Upcoming week", "Upcoming fortnight", "Three weeks", "Upcoming month");
-				$vals = array(1, 5, 7, 14, 21, 31);
+				$arr = array("Today", "Next five days", "Upcoming week", "Upcoming fortnight", "Upcoming three weeks", "Upcoming month");
+				$vals = array(1, 6, 8, 15, 22, 32);
 				$i = 0;
 				foreach ($arr as &$value) {
 					echo '<option value="'.$vals[$i].'"';
@@ -175,21 +177,21 @@ echo "Status: ".$status."<br />";
 		  <label>Schedule:</label>
 <?php
 
-		  	$currrentDay = (int) date("d");
+		  	$currentDay = (int) date("d");
 		  	$lastDayThisMonth = (int) date("t");
 		  	$wrapAround = false;
-		  	$last = $currrentDay + $Period;
+		  	$last = $currentDay + $Period -1;
 		  	if ($last > $lastDayThisMonth) {
 		  		$wrapAround = true;
 		  	}
 
-		  	echo 'currrentDay='.$currrentDay.' period='.$Period.' last='.$last.' lastDayThisMonth='.$lastDayThisMonth.' wrapAround='.$wrapAround.'<br>';		  
+		  	//echo 'currentDay='.$currentDay.' period='.$Period.' last='.$last.' lastDayThisMonth='.$lastDayThisMonth.' wrapAround='.$wrapAround.'<br>';		  
 ?>		  
 		  <table class="table table-hover" id="scheduleTable" border=1>
 		  <tr style="font-weight:bold" ><td>Day</td><td>Start</td><td>End</td><td>Stage</td></tr>
 		  <?php 
 
-			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day >=".$currrentDay." and day  <= ".$lastDayThisMonth." order by day asc"; 
+			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day >=".$currentDay." and day  <= ".$last." order by day asc"; 
 			$result = $conn->query($sql);
 			$colors = ['white', 'whitesmoke'];
 			$day = $currentDay;
@@ -202,23 +204,27 @@ echo "Status: ".$status."<br />";
 					echo "<td>".$row["Stage"]."</td>";
 					echo "</td></tr>";
 					$day++;
-					if ($day >= $Period) break;
+					//if ($day >= $Period) break;// the logic of this line assumes 1 row per day (I think) - just let it run to last instead
 				}
 			}
 
-			// add on the bit of next month if nwrap around needed ( we don't reset $day.. it keeps counting)
-			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day < ".$currrentDay."  order by day asc"; 
-			$result = $conn->query($sql);
-			if ($result->num_rows > 0 && $wrapAround) {
-				while($row = $result->fetch_assoc()) {
-					echo "<tr>";
-					echo "<td>".$row["Day"]."</td>";
-					echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
-					echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
-					echo "<td>".$row["Stage"]."</td>";
-					echo "</td></tr>";
-					$day++;
-					if ($day >= $Period) break;
+			// add on the bit of next month if nwrap around needed ( we don't reset $day.. it keeps counting) - removed day because of above assumption
+			if ($last > $lastDayThisMonth) {
+				$last = $last-$lastDayThisMonth;
+				
+				$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day < ".$last."  order by day asc"; 
+				$result = $conn->query($sql);
+				if ($result->num_rows > 0 && $wrapAround) {
+					while($row = $result->fetch_assoc()) {
+						echo "<tr>";
+						echo "<td>".$row["Day"]."</td>";
+						echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
+						echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
+						echo "<td>".$row["Stage"]."</td>";
+						echo "</td></tr>";
+						$day++;
+						//if ($day >= $Period) break;/ the logic of this line assumes 1 row per day (I think) - just let it run to last instead
+					}
 				}
 			}
 						
