@@ -38,7 +38,7 @@
 
 	// Get the schedule period 
 	if (empty($_GET['Period'] )) 
-		$Period = 'Upcoming month';
+		$Period = 31;
 	else 
 		$Period = $_GET['Period'];
 	
@@ -75,13 +75,13 @@
    <div class="container">
 		<div style="float:left;">
 			<img src="/images/load-shed.jpg" height="125" title="Load Sheddy" alt="Load Sheddy" />
-		<br></br>
+		<br />
 		</div>
 		<div style="float:left;">
 			<h1>Load Sheddy</h1>
 		</div>
-		<br></br>
-		<br></br>
+		<br />
+		<br />
 		
       <!-- Main component -->
       <div class="">
@@ -104,7 +104,7 @@ $secondSplit = explode('span',$firstSplit[1]);
 $status1 = explode(">",$secondSplit[0]);
 $status2 = explode("<",$status1[1]);
 $status = ucwords(trim($status2[0]));
-echo "Status: ".$status."<br>";	
+echo "Status: ".$status."<br />";	
 ?>	
 		  <select class="form-control" id="Stage" name="Stage" onchange="this.form.submit()">
 		  <?php 
@@ -154,82 +154,74 @@ echo "Status: ".$status."<br>";
 		  <label for="Period">Period</label>  
 		  <select class="form-control" id="Period" name="Period" onchange="this.form.submit()">
 		  <?php 
-				$arr = array("Today", "Next five days", "Upcoming week", "Upcoming fortnight", "Upcoming month");
+				$arr = array("Today", "Next five days", "Upcoming week", "Upcoming fortnight", "Three weeks", "Upcoming month");
+				$vals = array(1, 5, 7, 14, 21, 31);
+				$i = 0;
 				foreach ($arr as &$value) {
-					echo '<option value='.$value;
-					if ($value == $Period) {
+					echo '<option value="'.$vals[$i].'"';
+					if ($vals[$i] == $Period) {
 						echo ' SELECTED';
 					}
 					echo'>'.$value.'</option>';
+					$i++;
 				}
+
+
 			?>		  
 		  </select>
 		</div>
 
 		<div>
 		  <label>Schedule:</label>
+<?php
+
+		  	$currrentDay = (int) date("d");
+		  	$lastDayThisMonth = (int) date("t");
+		  	$wrapAround = false;
+		  	$last = $currrentDay + $Period;
+		  	if ($last > $lastDayThisMonth) {
+		  		$wrapAround = true;
+		  	}
+
+		  	echo 'currrentDay='.$currrentDay.' period='.$Period.' last='.$last.' lastDayThisMonth='.$lastDayThisMonth.' wrapAround='.$wrapAround.'<br>';		  
+?>		  
 		  <table class="table table-hover" id="scheduleTable" border=1>
 		  <tr style="font-weight:bold" ><td>Day</td><td>Start</td><td>End</td><td>Stage</td></tr>
 		  <?php 
-		  	$currrentDay = (int) date("d");
-			switch ($Period) {
-				case 'Today':
-					$lastDayThisMonth = (int) date("d");
-					break;
-				case 'Next five days':
-					$lastDayThisMonth = (int) date("d");
-					$lastDayThisMonth = $lastDayThisMonth +5;
-					break;
-				case 'Upcoming week':
-					$lastDayThisMonth = (int) date("d");
-					$lastDayThisMonth = $lastDayThisMonth +7;
-					break;
-				case 'Upcoming fortnight':
-					$lastDayThisMonth = (int) date("d");
-					$lastDayThisMonth = $lastDayThisMonth +14;
-					break;
-				case 'Upcoming month':
-					$lastDayThisMonth = (int) date("t");
-					break;
-				default:
-					$lastDayThisMonth = (int) date("t");
-					$lastDayThisMonth = $lastDayThisMonth +5;
-					}
-			//$lastDayThisMonth = min(date("t"),$lastDayThisMonth);
-			//$lastDayThisMonth = date("t");
-		  	echo 'currrentDay='.$currrentDay.' lastDayThisMonth='.$lastDayThisMonth.'<br>';		  
+
 			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day >=".$currrentDay." and day  <= ".$lastDayThisMonth." order by day asc"; 
 			$result = $conn->query($sql);
 			$colors = ['white', 'whitesmoke'];
+			$day = $currentDay;
 			if ($result->num_rows > 0) {
-				while($row = $result->fetch_assoc()) {
+				while($row = $result->fetch_assoc() ) {
 					echo "<tr style='background-color: ".$colors[$row["Day"]%2].";'>";
 					echo "<td>".$row["Day"]."</td>";
 					echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
 					echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
 					echo "<td>".$row["Stage"]."</td>";
 					echo "</td></tr>";
+					$day++;
+					if ($day >= $Period) break;
+				}
+			}
 
+			// add on the bit of next month if nwrap around needed ( we don't reset $day.. it keeps counting)
+			$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day < ".$currrentDay."  order by day asc"; 
+			$result = $conn->query($sql);
+			if ($result->num_rows > 0 && $wrapAround) {
+				while($row = $result->fetch_assoc()) {
+					echo "<tr>";
+					echo "<td>".$row["Day"]."</td>";
+					echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
+					echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
+					echo "<td>".$row["Stage"]."</td>";
+					echo "</td></tr>";
+					$day++;
+					if ($day >= $Period) break;
 				}
 			}
 						
-			if ($lastDayThisMonth > (int) date("t")) {
-				$currrentDay = $lastDayThisMonth-date("t");
-			
-				$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day < ".$currrentDay."  order by day asc"; 
-				$result = $conn->query($sql);
-				if ($result->num_rows > 0) {
-					while($row = $result->fetch_assoc()) {
-						echo "<tr>";
-						echo "<td>".$row["Day"]."</td>";
-						echo "<td>".str_pad($row["StartTime"], 5, "0", STR_PAD_LEFT) ."</td>";
-						echo "<td>".str_pad($row["EndTime"], 5, "0", STR_PAD_LEFT) ."</td>";
-						echo "<td>".$row["Stage"]."</td>";
-						echo "</td></tr>";
-
-					}
-				}
-			}				
 			?>
 			</table>
 		</div>		
