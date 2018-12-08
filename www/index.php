@@ -38,7 +38,7 @@
 
 	// Get the schedule period 
 	if (empty($_GET['Period'] )) 
-		$Period = 1;
+		$Period = 'Upcoming month';
 	else 
 		$Period = $_GET['Period'];
 	
@@ -151,16 +151,16 @@ echo "Status: ".$status."<br>";
 		  
 		  
 		<div class="form-group">
-		  <label for="Period">Schedule period</label>  
+		  <label for="Period">Period</label>  
 		  <select class="form-control" id="Period" name="Period" onchange="this.form.submit()">
 		  <?php 
-				$arr = array('Today', 'Next five days', 'Upcoming week', 'Upcoming fortnight', 'Upcoming month');
+				$arr = array("Today", "Next five days", "Upcoming week", "Upcoming fortnight", "Upcoming month");
 				foreach ($arr as &$value) {
 					echo '<option value='.$value;
 					if ($value == $Period) {
 						echo ' SELECTED';
 					}
-					echo'> ' .$value.'</option>';
+					echo'>'.$value.'</option>';
 				}
 			?>		  
 		  </select>
@@ -193,6 +193,7 @@ echo "Status: ".$status."<br>";
 					break;
 				default:
 					$lastDayThisMonth = (int) date("t");
+					$lastDayThisMonth = $lastDayThisMonth +5;
 					}
 			//$lastDayThisMonth = min(date("t"),$lastDayThisMonth);
 			//$lastDayThisMonth = date("t");
@@ -211,7 +212,10 @@ echo "Status: ".$status."<br>";
 
 				}
 			}
-			if ($lastDayThisMonth >= date("t")) {
+						
+			if ($lastDayThisMonth > (int) date("t")) {
+				$currrentDay = $lastDayThisMonth-date("t");
+			
 				$sql = "SELECT * from schedule where GroupID = ".$GroupID." and Stage <= ".$Stage." and day < ".$currrentDay."  order by day asc"; 
 				$result = $conn->query($sql);
 				if ($result->num_rows > 0) {
