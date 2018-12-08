@@ -108,6 +108,8 @@ $status2 = explode("<",$status1[1]);
 $status = ucwords(trim($status2[0]));
 echo "Status: ".$status."<br />";	
 ?>	
+		<br>
+		<br />
 		  <select class="form-control" id="Stage" name="Stage" onchange="this.form.submit()">
 		  <?php 
 				$arr = array(1, 2, 3, 4, 5, 6, 7);
