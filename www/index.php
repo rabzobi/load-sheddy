@@ -94,7 +94,8 @@
       <div class="">
 
 	<div class="form-group">			
-			<img src="images/<?php echo $image ?>" width="100" height="100"  title="Load Sheddy" alt="Load Sheddy" /><b>Load Sheddy</b><br>Status: <?php echo $status; ?>
+			<h1><img src="images/<?php echo $image ?>" width="100" height="100"  title="Load Sheddy" alt="Load Sheddy" />Load Sheddy</h1><br />
+			Status: <?php echo $status; ?>
 	</div>
 	<div class="form-group">			
      <form class = "form-main" role = "form" method = "get">
