@@ -38,7 +38,7 @@
 
 	// Get the schedule period 
 	if (empty($_GET['Period'] )) 
-		$Period = 31;
+		$Period = 32;
 	else 
 		$Period = $_GET['Period'];
 	
