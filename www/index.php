@@ -41,8 +41,23 @@
 		$Period = 32;
 	else 
 		$Period = $_GET['Period'];
-	
 
+	$ch = curl_init(); 
+	curl_setopt($ch, CURLOPT_URL, "www.loadshedding.eskom.co.za"); 
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+	$output = curl_exec($ch); 
+	curl_close($ch);
+	$firstSplit = explode('lsstatus',$output);
+	$secondSplit = explode('span',$firstSplit[1]);
+	//secondSplit=" style="font-size:18px; font-weight:bold"> not Load Shedding</
+	$status1 = explode(">",$secondSplit[0]);
+	$status2 = explode("<",$status1[1]);
+	$status = ucwords(trim($status2[0]));
+
+	$image = "red-shed.jpg";	
+	if ($status == "Not Load Shedding") {
+		$image = "green-shed.jpg";
+	}
 ?>
 <html lang = "en">   
 <head>
@@ -73,43 +88,18 @@
 </head>
 <body>
    <div class="container">
-		<div style="float:left;">
-			<img src="/images/load-shed.jpg" height="125" title="Load Sheddy" alt="Load Sheddy" />
-		
-		</div>
-		<div style="float:left;">
-			<h1>Load Sheddy</h1>
-		</div>
-		<br>
-		<br />
-		<br>
-		<br />
+
 		
       <!-- Main component -->
       <div class="">
-         <form class = "form-main" role = "form" method = "get">
 
-		<div class="form-group">
-		  <label for="Stage">Stage</label>
-<?php
+	<div class="form-group">			
+			<img src="images/<?php echo $image ?>" width="100" height="100"  title="Load Sheddy" alt="Load Sheddy" /><b>Load Sheddy</b><br>Status: <?php echo $status; ?>
+	</div>
+	<div class="form-group">			
+     <form class = "form-main" role = "form" method = "get">
+		 <label for="Stage">Stage</label>
 
-$ch = curl_init(); 
-curl_setopt($ch, CURLOPT_URL, "www.loadshedding.eskom.co.za"); 
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-$output = curl_exec($ch); 
-curl_close($ch);
-
-
-$firstSplit = explode('lsstatus',$output);
-$secondSplit = explode('span',$firstSplit[1]);
-//secondSplit=" style="font-size:18px; font-weight:bold"> not Load Shedding</
-$status1 = explode(">",$secondSplit[0]);
-$status2 = explode("<",$status1[1]);
-$status = ucwords(trim($status2[0]));
-echo "Status: ".$status."<br />";	
-?>	
-		<br>
-		<br />
 		  <select class="form-control" id="Stage" name="Stage" onchange="this.form.submit()">
 		  <?php 
 				$arr = array(1, 2, 3, 4, 5, 6, 7);
