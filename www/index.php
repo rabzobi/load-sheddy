@@ -94,7 +94,7 @@
       <div class="">
 
 	<div class="form-group">			
-			<h1><img src="images/<?php echo $image ?>" width="100" height="100"  title="Load Sheddy" alt="Load Sheddy" />Load Sheddy</h1><br />
+			<h1><img src="images/<?php echo $image ?>" width="100" height="100"  title="Load Sheddy" alt="Load Sheddy" />Tshwane Load Sheddy</h1><br />
 			Status: <?php echo $status; ?>
 	</div>
 	<div class="form-group">			
