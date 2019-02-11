@@ -15,11 +15,7 @@
 
 	$msg = "";
 
-	// Get load shedding stage
-	if (empty($_GET['Stage'] )) 
-		$Stage = 1;
-	else 
-		$Stage = $_GET['Stage'];
+
 	
 	// get the Suburb (zone) maps onto Group
 	if (empty($_GET['ZoneID'] )) 
@@ -43,20 +39,41 @@
 		$Period = $_GET['Period'];
 
 	$ch = curl_init(); 
-	curl_setopt($ch, CURLOPT_URL, "www.loadshedding.eskom.co.za"); 
+	curl_setopt($ch, CURLOPT_URL, "loadshedding.eskom.co.za/LoadShedding/GetStatus"); 
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
 	$output = curl_exec($ch); 
+	$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	curl_close($ch);
-	$firstSplit = explode('lsstatus',$output);
-	$secondSplit = explode('span',$firstSplit[1]);
-	//secondSplit=" style="font-size:18px; font-weight:bold"> not Load Shedding</
-	$status1 = explode(">",$secondSplit[0]);
-	$status2 = explode("<",$status1[1]);
-	$status = ucwords(trim($status2[0]));
+
+    # Eskom responds with a single number
+    # 1 = No load shedding
+    # 2 = Stage 1
+    # 3 = Stage 2
+    # 4 = Stage 3
+
+	if ($httpcode == 200) {
+		if ($output == "1")
+			$status = "Not load shedding";
+		else {
+			$status = "Stage ".(trim($output) - 1);
+			// Get load shedding stage
+			if (empty($_GET['Stage'] )) 
+				$Stage =  (trim($output) - 1);		
+		}
+	} else {
+		$status = "Error getting status";		
+	}
 
 	$image = "red-shed.jpg";	
-	if ($status == "Not Load Shedding") {
+	if ($output == "1") {
 		$image = "green-shed.jpg";
+	}
+
+	if (empty($Stage)) {
+		if (empty($_GET['Stage'] ))
+			$Stage = 1;
+		else 
+			$Stage = $_GET['Stage'];	
 	}
 ?>
 <html lang = "en">   
