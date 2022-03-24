@@ -13,10 +13,6 @@
 	$msg = '';
 	include 'db.php';
 
-	$msg = "";
-
-
-	
 	// get the Suburb (zone) maps onto Group
 	if (empty($_GET['ZoneID'] )) 
 		$ZoneID = 1;
@@ -25,8 +21,12 @@
 
 	// Get current Group
 	$GroupID = 0;
-	$sql = "SELECT GroupID FROM zones where ZoneID = ".$ZoneID; 
-	$result = $conn->query($sql);
+	$sql = "SELECT GroupID FROM zones where ZoneID = ?"; 
+	$stmt = $conn->prepare($sql);
+	$stmt->bind_param('s', $name);
+	$stmt->execute();
+	$result = $stmt->get_result();
+
 	if ($result->num_rows > 0) {
 		$row = $result->fetch_assoc();
 		$GroupID = $row["GroupID"];
